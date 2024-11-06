@@ -1,7 +1,7 @@
 /*
  * vim:ts=4:sw=4:expandtab
  *
- * i3 - an improved dynamic tiling window manager
+ * i3 - an improved tiling window manager
  * © 2009 Michael Stapelberg and contributors (see also: LICENSE)
  *
  * move.c: Moving containers into some direction.
@@ -355,8 +355,9 @@ void tree_move(Con *con, direction_t direction) {
     /* This is the container *above* 'con' (an ancestor of con) which is inside
      * 'same_orientation' */
     Con *above = con;
-    while (above->parent != same_orientation)
+    while (above->parent != same_orientation) {
         above = above->parent;
+    }
 
     /* Enforce the fullscreen focus restrictions. */
     if (!con_fullscreen_permits_focusing(above->parent)) {

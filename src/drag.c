@@ -1,7 +1,7 @@
 /*
  * vim:ts=4:sw=4:expandtab
  *
- * i3 - an improved dynamic tiling window manager
+ * i3 - an improved tiling window manager
  * © 2009 Michael Stapelberg and contributors (see also: LICENSE)
  *
  * drag.c: click and drag.
@@ -103,8 +103,9 @@ static bool drain_drag_events(EV_P, struct drag_x11_cb *dragloop) {
                 break;
         }
 
-        if (last_motion_notify != (xcb_motion_notify_event_t *)event)
+        if (last_motion_notify != (xcb_motion_notify_event_t *)event) {
             free(event);
+        }
 
         if (dragloop->result != DRAGGING) {
             ev_break(EV_A_ EVBREAK_ONE);
@@ -233,8 +234,9 @@ drag_result_t drag_pointer(Con *con, const xcb_button_press_event_t *event,
         .extra = extra,
     };
     ev_prepare *prepare = &loop.prepare;
-    if (con)
+    if (con) {
         loop.old_rect = con->rect;
+    }
     ev_prepare_init(prepare, xcb_drag_prepare_cb);
     prepare->data = &loop;
     main_set_x11_cb(false);

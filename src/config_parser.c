@@ -1,7 +1,7 @@
 /*
  * vim:ts=4:sw=4:expandtab
  *
- * i3 - an improved dynamic tiling window manager
+ * i3 - an improved tiling window manager
  * © 2009 Michael Stapelberg and contributors (see also: LICENSE)
  *
  * config_parser.c: hand-written parser to parse configuration directives.
@@ -80,8 +80,9 @@ typedef struct tokenptr {
 static void push_string(struct stack *ctx, const char *identifier, const char *str) {
     for (int c = 0; c < 10; c++) {
         if (ctx->stack[c].identifier != NULL &&
-            strcmp(ctx->stack[c].identifier, identifier) != 0)
+            strcmp(ctx->stack[c].identifier, identifier) != 0) {
             continue;
+        }
         if (ctx->stack[c].identifier == NULL) {
             /* Found a free slot, let’s store it here. */
             ctx->stack[c].identifier = identifier;
@@ -128,28 +129,33 @@ static void push_long(struct stack *ctx, const char *identifier, long num) {
 
 static const char *get_string(struct stack *ctx, const char *identifier) {
     for (int c = 0; c < 10; c++) {
-        if (ctx->stack[c].identifier == NULL)
+        if (ctx->stack[c].identifier == NULL) {
             break;
-        if (strcmp(identifier, ctx->stack[c].identifier) == 0)
+        }
+        if (strcmp(identifier, ctx->stack[c].identifier) == 0) {
             return ctx->stack[c].val.str;
+        }
     }
     return NULL;
 }
 
 static long get_long(struct stack *ctx, const char *identifier) {
     for (int c = 0; c < 10; c++) {
-        if (ctx->stack[c].identifier == NULL)
+        if (ctx->stack[c].identifier == NULL) {
             break;
-        if (strcmp(identifier, ctx->stack[c].identifier) == 0)
+        }
+        if (strcmp(identifier, ctx->stack[c].identifier) == 0) {
             return ctx->stack[c].val.num;
+        }
     }
     return 0;
 }
 
 static void clear_stack(struct stack *ctx) {
     for (int c = 0; c < 10; c++) {
-        if (ctx->stack[c].type == STACK_STR)
+        if (ctx->stack[c].type == STACK_STR) {
             free(ctx->stack[c].val.str);
+        }
         ctx->stack[c].identifier = NULL;
         ctx->stack[c].val.str = NULL;
         ctx->stack[c].val.num = 0;
@@ -218,8 +224,9 @@ static const char *start_of_line(const char *walk, const char *beginning) {
 static char *single_line(const char *start) {
     char *result = sstrdup(start);
     char *end = strchr(result, '\n');
-    if (end != NULL)
+    if (end != NULL) {
         *end = '\0';
+    }
     return result;
 }
 
@@ -264,8 +271,9 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
     while ((size_t)(walk - input) <= len) {
         /* Skip whitespace before every token, newlines are relevant since they
          * separate configuration directives. */
-        while ((*walk == ' ' || *walk == '\t') && *walk != '\0')
+        while ((*walk == ' ' || *walk == '\t') && *walk != '\0') {
             walk++;
+        }
 
         cmdp_token_ptr *ptr = &(tokens[ctx->state]);
         token_handled = false;
@@ -292,12 +300,14 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
                 errno = 0;
                 long int num = strtol(walk, &end, 10);
                 if ((errno == ERANGE && (num == LONG_MIN || num == LONG_MAX)) ||
-                    (errno != 0 && num == 0))
+                    (errno != 0 && num == 0)) {
                     continue;
+                }
 
                 /* No valid numbers found */
-                if (end == walk)
+                if (end == walk) {
                     continue;
+                }
 
                 if (token->identifier != NULL) {
                     push_long(ctx->stack, token->identifier, num);
@@ -317,12 +327,14 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
                 if (*walk == '"') {
                     beginning++;
                     walk++;
-                    while (*walk != '\0' && (*walk != '"' || *(walk - 1) == '\\'))
+                    while (*walk != '\0' && (*walk != '"' || *(walk - 1) == '\\')) {
                         walk++;
+                    }
                 } else {
                     if (token->name[0] == 's') {
-                        while (*walk != '\0' && *walk != '\r' && *walk != '\n')
+                        while (*walk != '\0' && *walk != '\r' && *walk != '\n') {
                             walk++;
+                        }
                     } else {
                         /* For a word, the delimiters are white space (' ' or
                          * '\t'), closing square bracket (]), comma (,) and
@@ -330,8 +342,9 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
                         while (*walk != ' ' && *walk != '\t' &&
                                *walk != ']' && *walk != ',' &&
                                *walk != ';' && *walk != '\r' &&
-                               *walk != '\n' && *walk != '\0')
+                               *walk != '\n' && *walk != '\0') {
                             walk++;
+                        }
                     }
                 }
                 if (walk != beginning) {
@@ -344,8 +357,9 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
                         /* We only handle escaped double quotes to not break
                          * backwards compatibility with people using \w in
                          * regular expressions etc. */
-                        if (beginning[inpos] == '\\' && beginning[inpos + 1] == '"')
+                        if (beginning[inpos] == '\\' && beginning[inpos + 1] == '"') {
                             inpos++;
+                        }
                         str[outpos] = beginning[inpos];
                     }
                     if (token->identifier) {
@@ -354,8 +368,9 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
                     free(str);
                     /* If we are at the end of a quoted string, skip the ending
                      * double quote. */
-                    if (*walk == '"')
+                    if (*walk == '"') {
                         walk++;
+                    }
                     next_state(token, ctx);
                     token_handled = true;
                     break;
@@ -363,8 +378,9 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
             }
 
             if (strcmp(token->name, "line") == 0) {
-                while (*walk != '\0' && *walk != '\n' && *walk != '\r')
+                while (*walk != '\0' && *walk != '\n' && *walk != '\r') {
                     walk++;
+                }
                 next_state(token, ctx);
                 token_handled = true;
                 linecnt++;
@@ -394,8 +410,9 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
             /* Figure out how much memory we will need to fill in the names of
              * all tokens afterwards. */
             int tokenlen = 0;
-            for (c = 0; c < ptr->n; c++)
+            for (c = 0; c < ptr->n; c++) {
                 tokenlen += strlen(ptr->array[c].name) + strlen("'', ");
+            }
 
             /* Build up a decent error message. We include the problem, the
              * full input, and underline the position where the parser
@@ -415,8 +432,9 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
                 } else {
                     /* Skip error tokens in error messages, they are used
                      * internally only and might confuse users. */
-                    if (strcmp(token->name, "error") == 0)
+                    if (strcmp(token->name, "error") == 0) {
                         continue;
+                    }
                     /* Any other token is copied to the error message enclosed
                      * with angle brackets. */
                     *tokenwalk++ = '<';
@@ -443,8 +461,9 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
             const char *copywalk;
             for (copywalk = error_line;
                  *copywalk != '\n' && *copywalk != '\r' && *copywalk != '\0';
-                 copywalk++)
+                 copywalk++) {
                 position[(copywalk - error_line)] = (copywalk >= walk ? '^' : (*copywalk == '\t' ? '\t' : ' '));
+            }
             position[(copywalk - error_line)] = '\0';
 
             ELOG("CONFIG: %s\n", errormessage);
@@ -481,8 +500,9 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
             context->has_errors = true;
 
             /* Skip the rest of this line, but continue parsing. */
-            while ((size_t)(walk - input) <= len && *walk != '\n')
+            while ((size_t)(walk - input) <= len && *walk != '\n') {
                 walk++;
+            }
 
             free(position);
             free(errormessage);
@@ -495,8 +515,9 @@ static void parse_config(struct parser_ctx *ctx, const char *input, struct conte
             for (int i = ctx->statelist_idx - 1; (i >= 0) && !error_token_found; i--) {
                 cmdp_token_ptr *errptr = &(tokens[ctx->statelist[i]]);
                 for (int j = 0; j < errptr->n; j++) {
-                    if (strcmp(errptr->array[j].name, "error") != 0)
+                    if (strcmp(errptr->array[j].name, "error") != 0) {
                         continue;
+                    }
                     next_state(&(errptr->array[j]), ctx);
                     error_token_found = true;
                     break;
@@ -560,7 +581,6 @@ int main(int argc, char *argv[]) {
     memset(&stack, '\0', sizeof(struct stack));
     struct parser_ctx ctx = {
         .use_nagbar = false,
-        .assume_v4 = false,
         .stack = &stack,
     };
     SLIST_INIT(&(ctx.variables));
@@ -570,175 +590,6 @@ int main(int argc, char *argv[]) {
 }
 
 #else
-
-/*
- * Goes through each line of buf (separated by \n) and checks for statements /
- * commands which only occur in i3 v4 configuration files. If it finds any, it
- * returns version 4, otherwise it returns version 3.
- *
- */
-static int detect_version(char *buf) {
-    char *walk = buf;
-    char *line = buf;
-    while (*walk != '\0') {
-        if (*walk != '\n') {
-            walk++;
-            continue;
-        }
-
-        /* check for some v4-only statements */
-        if (strncasecmp(line, "bindcode", strlen("bindcode")) == 0 ||
-            strncasecmp(line, "include", strlen("include")) == 0 ||
-            strncasecmp(line, "force_focus_wrapping", strlen("force_focus_wrapping")) == 0 ||
-            strncasecmp(line, "# i3 config file (v4)", strlen("# i3 config file (v4)")) == 0 ||
-            strncasecmp(line, "workspace_layout", strlen("workspace_layout")) == 0) {
-            LOG("deciding for version 4 due to this line: %.*s\n", (int)(walk - line), line);
-            return 4;
-        }
-
-        /* if this is a bind statement, we can check the command */
-        if (strncasecmp(line, "bind", strlen("bind")) == 0) {
-            char *bind = strchr(line, ' ');
-            if (bind == NULL)
-                goto next;
-            while ((*bind == ' ' || *bind == '\t') && *bind != '\0')
-                bind++;
-            if (*bind == '\0')
-                goto next;
-            if ((bind = strchr(bind, ' ')) == NULL)
-                goto next;
-            while ((*bind == ' ' || *bind == '\t') && *bind != '\0')
-                bind++;
-            if (*bind == '\0')
-                goto next;
-            if (strncasecmp(bind, "layout", strlen("layout")) == 0 ||
-                strncasecmp(bind, "floating", strlen("floating")) == 0 ||
-                strncasecmp(bind, "workspace", strlen("workspace")) == 0 ||
-                strncasecmp(bind, "focus left", strlen("focus left")) == 0 ||
-                strncasecmp(bind, "focus right", strlen("focus right")) == 0 ||
-                strncasecmp(bind, "focus up", strlen("focus up")) == 0 ||
-                strncasecmp(bind, "focus down", strlen("focus down")) == 0 ||
-                strncasecmp(bind, "border normal", strlen("border normal")) == 0 ||
-                strncasecmp(bind, "border 1pixel", strlen("border 1pixel")) == 0 ||
-                strncasecmp(bind, "border pixel", strlen("border pixel")) == 0 ||
-                strncasecmp(bind, "border borderless", strlen("border borderless")) == 0 ||
-                strncasecmp(bind, "--no-startup-id", strlen("--no-startup-id")) == 0 ||
-                strncasecmp(bind, "bar", strlen("bar")) == 0) {
-                LOG("deciding for version 4 due to this line: %.*s\n", (int)(walk - line), line);
-                return 4;
-            }
-        }
-
-    next:
-        /* advance to the next line */
-        walk++;
-        line = walk;
-    }
-
-    return 3;
-}
-
-/*
- * Calls i3-migrate-config-to-v4 to migrate a configuration file (input
- * buffer).
- *
- * Returns the converted config file or NULL if there was an error (for
- * example the script could not be found in $PATH or the i3 executable’s
- * directory).
- *
- */
-static char *migrate_config(char *input, off_t size) {
-    int writepipe[2];
-    int readpipe[2];
-
-    if (pipe(writepipe) != 0 ||
-        pipe(readpipe) != 0) {
-        warn("migrate_config: Could not create pipes");
-        return NULL;
-    }
-
-    pid_t pid = fork();
-    if (pid == -1) {
-        warn("Could not fork()");
-        return NULL;
-    }
-
-    /* child */
-    if (pid == 0) {
-        /* close writing end of writepipe, connect reading side to stdin */
-        close(writepipe[1]);
-        dup2(writepipe[0], 0);
-
-        /* close reading end of readpipe, connect writing side to stdout */
-        close(readpipe[0]);
-        dup2(readpipe[1], 1);
-
-        static char *argv[] = {
-            NULL, /* will be replaced by the executable path */
-            NULL};
-        exec_i3_utility("i3-migrate-config-to-v4", argv);
-    }
-
-    /* parent */
-
-    /* close reading end of the writepipe (connected to the script’s stdin) */
-    close(writepipe[0]);
-
-    /* write the whole config file to the pipe, the script will read everything
-     * immediately */
-    if (writeall(writepipe[1], input, size) == -1) {
-        warn("Could not write to pipe");
-        return NULL;
-    }
-    close(writepipe[1]);
-
-    /* close writing end of the readpipe (connected to the script’s stdout) */
-    close(readpipe[1]);
-
-    /* read the script’s output */
-    int conv_size = 65535;
-    char *converted = scalloc(conv_size, 1);
-    int read_bytes = 0, ret;
-    do {
-        if (read_bytes == conv_size) {
-            conv_size += 65535;
-            converted = srealloc(converted, conv_size);
-        }
-        ret = read(readpipe[0], converted + read_bytes, conv_size - read_bytes);
-        if (ret == -1) {
-            warn("Cannot read from pipe");
-            FREE(converted);
-            return NULL;
-        }
-        read_bytes += ret;
-    } while (ret > 0);
-
-    /* get the returncode */
-    int status;
-    wait(&status);
-    if (!WIFEXITED(status)) {
-        fprintf(stderr, "Child did not terminate normally, using old config file (will lead to broken behaviour)\n");
-        FREE(converted);
-        return NULL;
-    }
-
-    int returncode = WEXITSTATUS(status);
-    if (returncode != 0) {
-        fprintf(stderr, "Migration process exit code was != 0\n");
-        if (returncode == 2) {
-            fprintf(stderr, "could not start the migration script\n");
-            /* TODO: script was not found. tell the user to fix their system or create a v4 config */
-        } else if (returncode == 1) {
-            fprintf(stderr, "This already was a v4 config. Please add the following line to your config file:\n");
-            fprintf(stderr, "# i3 config file (v4)\n");
-            /* TODO: nag the user with a message to include a hint for i3 in their config file */
-        }
-        FREE(converted);
-        return NULL;
-    }
-
-    return converted;
-}
 
 /**
  * Launch nagbar to indicate errors in the configuration file.
@@ -793,8 +644,9 @@ static void upsert_variable(struct variables_head *variables, char *key, char *v
     /* ensure that the correct variable is matched in case of one being
      * the prefix of another */
     SLIST_FOREACH (test, variables, variables) {
-        if (strlen(new->key) >= strlen(test->key))
+        if (strlen(new->key) >= strlen(test->key)) {
             break;
+        }
         loc = test;
     }
 
@@ -893,11 +745,13 @@ parse_file_result_t parse_file(struct parser_ctx *ctx, const char *f, IncludedFi
     bool invalid_sets = false;
 
     while (!feof(fstr)) {
-        if (!continuation)
+        if (!continuation) {
             continuation = buffer;
+        }
         if (fgets(continuation, sizeof(buffer) - (continuation - buffer), fstr) == NULL) {
-            if (feof(fstr))
+            if (feof(fstr)) {
                 break;
+            }
             return PARSE_FILE_FAILED;
         }
         if (buffer[strlen(buffer) - 1] != '\n' && !feof(fstr)) {
@@ -1027,8 +881,9 @@ parse_file_result_t parse_file(struct parser_ctx *ctx, const char *f, IncludedFi
         nearest = NULL;
         int distance = stbuf.st_size;
         SLIST_FOREACH (current, &(ctx->variables), variables) {
-            if (current->next_match == NULL)
+            if (current->next_match == NULL) {
                 continue;
+            }
             if ((current->next_match - walk) < distance) {
                 distance = (current->next_match - walk);
                 nearest = current;
@@ -1049,37 +904,6 @@ parse_file_result_t parse_file(struct parser_ctx *ctx, const char *f, IncludedFi
         }
     }
 
-    /* analyze the string to find out whether this is an old config file (3.x)
-     * or a new config file (4.x). If it’s old, we run the converter script. */
-    int version = 4;
-    if (!ctx->assume_v4) {
-        version = detect_version(buf);
-    }
-    if (version == 3) {
-        /* We need to convert this v3 configuration */
-        char *converted = migrate_config(new, strlen(new));
-        if (converted != NULL) {
-            ELOG("\n");
-            ELOG("****************************************************************\n");
-            ELOG("NOTE: Automatically converted configuration file from v3 to v4.\n");
-            ELOG("\n");
-            ELOG("Please convert your config file to v4. You can use this command:\n");
-            ELOG("    mv %s %s.O\n", f, f);
-            ELOG("    i3-migrate-config-to-v4 %s.O > %s\n", f, f);
-            ELOG("****************************************************************\n");
-            ELOG("\n");
-            free(new);
-            new = converted;
-        } else {
-            LOG("\n");
-            LOG("**********************************************************************\n");
-            LOG("ERROR: Could not convert config file. Maybe i3-migrate-config-to-v4\n");
-            LOG("was not correctly installed on your system?\n");
-            LOG("**********************************************************************\n");
-            LOG("\n");
-        }
-    }
-
     included_file->variable_replaced_contents = sstrdup(new);
 
     struct context *context = scalloc(1, sizeof(struct context));
@@ -1093,9 +917,6 @@ parse_file_result_t parse_file(struct parser_ctx *ctx, const char *f, IncludedFi
 
     if (ctx->use_nagbar && (context->has_errors || context->has_warnings || invalid_sets)) {
         ELOG("FYI: You are using i3 version %s\n", i3_version);
-        if (version == 3)
-            ELOG("Please convert your configfile first, then fix any remaining errors (see above).\n");
-
         start_config_error_nagbar(f, context->has_errors || invalid_sets);
     }
 
