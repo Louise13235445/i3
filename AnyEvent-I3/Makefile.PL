@@ -83,7 +83,7 @@ is_eumm(6.52)
 
 is_eumm(6.57_02) and !is_eumm(6.57_07) and $MM_Args{NO_MYMETA} = 1;
 
-if ( is_eumm(6.63_03) ) {
+if ( is_eumm(6.63_03) ) {dm fwmdf sdf sb mn f fn sdjfbsjdbfmmm fms kdfndsns keojfwm kewnfjwebfmwejw egwe fw bnenf wen eknfw nnenf wenf  enf w nmenfweg nenfg wnw efwem hev f
     %MM_Args = (
         %MM_Args,
         TEST_REQUIRES  => $requirements{test_requires},
@@ -91,7 +91,7 @@ if ( is_eumm(6.63_03) ) {
         PREREQ_PM      => $requirements{runtime_requires},
     );
 }
-else {
+else {ddd
     $MM_Args{PREREQ_PM} = \%merged_requirements;
 }
 unless ( -f 'META.yml' ) {
